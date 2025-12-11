@@ -220,6 +220,152 @@ class ColorClusterer:
         else:
             plt.show()
 
+    def visualize_clusters(self, save_path: Optional[str] = None, figsize: Tuple[int, int] = (12, 8), max_points: int = 5000):
+        """
+        Visualize color clusters in 3D RGB space.
+
+        Shows original pixels as points and cluster centers as larger markers.
+
+        Args:
+            save_path: Path to save the visualization. If None, displays it.
+            figsize: Figure size for matplotlib
+            max_points: Maximum number of pixels to plot for performance
+        """
+        if self.kmeans is None or self.pixels is None:
+            raise ValueError("Clusters not available. Call fit() first.")
+
+        # Sample pixels for visualization (too many points slow down plotting)
+        if len(self.pixels) > max_points:
+            indices = np.random.choice(len(self.pixels), max_points, replace=False)
+            pixels_sample = self.pixels[indices]
+        else:
+            pixels_sample = self.pixels
+
+        # Get cluster labels for sampled pixels
+        labels_sample = self.kmeans.predict(pixels_sample)
+
+        # Create 3D scatter plot
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(111, projection='3d')
+
+        # Plot original pixels colored by their cluster
+        scatter = ax.scatter(
+            pixels_sample[:, 0], pixels_sample[:, 1], pixels_sample[:, 2],
+            c=labels_sample, cmap='tab10', alpha=0.6, s=20, edgecolors='none'
+        )
+
+        # Plot cluster centers as larger stars
+        ax.scatter(
+            self.palette[:, 0], self.palette[:, 1], self.palette[:, 2],
+            c=range(len(self.palette)), cmap='tab10',
+            marker='*', s=300, edgecolors='black', linewidth=2
+        )
+
+        # Add cluster center labels
+        for i, center in enumerate(self.palette):
+            ax.text(
+                center[0], center[1], center[2],
+                f'C{i+1}\n#{center[0]:02x}{center[1]:02x}{center[2]:02x}',
+                fontsize=8, ha='center', va='bottom',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8)
+            )
+
+        ax.set_xlabel('Red')
+        ax.set_ylabel('Green')
+        ax.set_zlabel('Blue')
+        ax.set_title(f'Color Clusters in RGB Space ({len(self.palette)} clusters)')
+
+        # Set axis limits
+        ax.set_xlim(0, 255)
+        ax.set_ylim(0, 255)
+        ax.set_zlim(0, 255)
+
+        plt.tight_layout()
+
+        if save_path:
+            plt.savefig(save_path, bbox_inches='tight', dpi=150)
+            plt.close()
+        else:
+            plt.show()
+
+    def visualize_clusters_2d(self, save_path: Optional[str] = None, figsize: Tuple[int, int] = (10, 8), max_points: int = 5000):
+        """
+        Visualize color clusters in 2D using PCA for dimensionality reduction.
+
+        Shows original pixels and cluster centers in 2D space.
+
+        Args:
+            save_path: Path to save the visualization. If None, displays it.
+            figsize: Figure size for matplotlib
+            max_points: Maximum number of pixels to plot for performance
+        """
+        if self.kmeans is None or self.pixels is None:
+            raise ValueError("Clusters not available. Call fit() first.")
+
+        try:
+            from sklearn.decomposition import PCA
+        except ImportError:
+            raise ImportError("PCA visualization requires scikit-learn. Install with: pip install scikit-learn")
+
+        # Sample pixels for visualization
+        if len(self.pixels) > max_points:
+            indices = np.random.choice(len(self.pixels), max_points, replace=False)
+            pixels_sample = self.pixels[indices]
+        else:
+            pixels_sample = self.pixels
+
+        # Get cluster labels for sampled pixels
+        labels_sample = self.kmeans.predict(pixels_sample)
+
+        # Apply PCA to reduce to 2D
+        pca = PCA(n_components=2)
+        pixels_2d = pca.fit_transform(pixels_sample)
+        centers_2d = pca.transform(self.palette)
+
+        # Create 2D scatter plot
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
+
+        # Plot original pixels colored by their cluster
+        scatter = ax.scatter(
+            pixels_2d[:, 0], pixels_2d[:, 1],
+            c=labels_sample, cmap='tab10', alpha=0.6, s=20, edgecolors='none'
+        )
+
+        # Plot cluster centers as larger stars
+        ax.scatter(
+            centers_2d[:, 0], centers_2d[:, 1],
+            c=range(len(self.palette)), cmap='tab10',
+            marker='*', s=300, edgecolors='black', linewidth=2
+        )
+
+        # Add cluster center labels
+        for i, (center_2d, center_rgb) in enumerate(zip(centers_2d, self.palette)):
+            ax.annotate(
+                f'C{i+1}\n#{center_rgb[0]:02x}{center_rgb[1]:02x}{center_rgb[2]:02x}',
+                (center_2d[0], center_2d[1]),
+                xytext=(5, 5), textcoords='offset points',
+                fontsize=8, ha='left', va='bottom',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8)
+            )
+
+        ax.set_xlabel('PC1')
+        ax.set_ylabel('PC2')
+        ax.set_title(f'Color Clusters (PCA 2D projection, {len(self.palette)} clusters)')
+        ax.grid(True, alpha=0.3)
+
+        # Add colorbar
+        cbar = plt.colorbar(scatter, ax=ax, shrink=0.8)
+        cbar.set_label('Cluster')
+        cbar.set_ticks(range(len(self.palette)))
+
+        plt.tight_layout()
+
+        if save_path:
+            plt.savefig(save_path, bbox_inches='tight', dpi=150)
+            plt.close()
+        else:
+            plt.show()
+
 
 def cluster_image_colors(image_path: str, n_colors: int = 8, random_state: int = 42) -> ColorClusterer:
     """

@@ -39,8 +39,14 @@ python cluster_colors.py your_image.jpg --colors 4 --reduce-colors custom_reduce
 # Get detailed color information as text
 python cluster_colors.py your_image.jpg --text
 
+# Create 3D cluster visualization (shows pixels and cluster centers in RGB space)
+python cluster_colors.py photo.jpg --colors 8 --visualize-clusters-3d clusters_3d.png
+
+# Create 2D cluster visualization (PCA projection for easier viewing)
+python cluster_colors.py photo.jpg --colors 6 --visualize-clusters-2d clusters_2d.png
+
 # Combine options
-python cluster_colors.py photo.jpg --colors 12 --output-palette colors.png --reduce-colors posterized.jpg --text
+python cluster_colors.py photo.jpg --colors 12 --output-palette colors.png --reduce-colors posterized.jpg --text --visualize-clusters-2d analysis.png
 ```
 
 ### Python API Usage
@@ -72,9 +78,12 @@ clusterer.reduce_image_colors(output_path='reduced_image.jpg')
 - `image_path`: Path to the image file (required)
 - `--colors, -c`: Number of colors to cluster into (default: 8)
 - `--output-palette, -p`: Save color palette visualization to file
-- `--reduce-colors, -r`: Save image with reduced colors to file
+- `--reduce-colors, -r`: Save clusterized image to specified file (default: auto-generate with _clusterized suffix)
+- `--visualize-clusters-3d, -3`: Save 3D RGB cluster visualization to file
+- `--visualize-clusters-2d, -2`: Save 2D PCA cluster visualization to file
 - `--text, -t`: Output colors as text with hex codes and frequencies
 - `--random-state, -s`: Random seed for reproducible results (default: 42)
+- `--no-save`: Don't save the clusterized image (only show analysis)
 
 ## Examples
 

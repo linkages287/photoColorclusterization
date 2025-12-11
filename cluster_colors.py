@@ -4,6 +4,7 @@ Command-line interface for the Image Color Clusterer.
 
 Usage:
     python cluster_colors.py image.jpg --colors 8 --output-palette palette.png
+    python cluster_colors.py image.jpg --colors 6 --visualize-clusters-3d clusters_3d.png
     # Image is automatically saved as image_clusterized.jpg
 
 Examples:
@@ -35,7 +36,9 @@ from color_clusterer import cluster_image_colors
 @click.option('--text', '-t', is_flag=True, help='Output colors as text (hex codes and frequencies)')
 @click.option('--random-state', '-s', default=42, type=int, help='Random seed for reproducible results')
 @click.option('--no-save', is_flag=True, help="Don't save the clusterized image (only show analysis)")
-def cluster_colors(image_path, colors, output_palette, reduce_colors, text, random_state, no_save):
+@click.option('--visualize-clusters-3d', '-3', type=click.Path(), help='Save 3D RGB cluster visualization to file')
+@click.option('--visualize-clusters-2d', '-2', type=click.Path(), help='Save 2D PCA cluster visualization to file')
+def cluster_colors(image_path, colors, output_palette, reduce_colors, text, random_state, no_save, visualize_clusters_3d, visualize_clusters_2d):
     """
     Cluster colors in an image using k-means algorithm.
 
@@ -74,6 +77,18 @@ def cluster_colors(image_path, colors, output_palette, reduce_colors, text, rand
             click.echo(f"Saving color palette to: {output_palette}")
             clusterer.visualize_palette(save_path=output_palette)
             click.echo("Palette saved!")
+
+        # Save 3D cluster visualization if requested
+        if visualize_clusters_3d:
+            click.echo(f"Saving 3D cluster visualization to: {visualize_clusters_3d}")
+            clusterer.visualize_clusters(save_path=visualize_clusters_3d)
+            click.echo("3D cluster visualization saved!")
+
+        # Save 2D cluster visualization if requested
+        if visualize_clusters_2d:
+            click.echo(f"Saving 2D cluster visualization to: {visualize_clusters_2d}")
+            clusterer.visualize_clusters_2d(save_path=visualize_clusters_2d)
+            click.echo("2D cluster visualization saved!")
 
         # Reduce image colors - save clusterized version by default
         if not no_save:
