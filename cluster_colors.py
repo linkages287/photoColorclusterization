@@ -4,6 +4,7 @@ Command-line interface for the Image Color Clusterer.
 
 Usage:
     python cluster_colors.py image.jpg --colors 8 --output-palette palette.png
+    # Image is automatically saved as image_clusterized.jpg
 
 Examples:
     # Extract 8 colors and show them
@@ -30,10 +31,11 @@ from color_clusterer import cluster_image_colors
 @click.argument('image_path', type=click.Path(exists=True))
 @click.option('--colors', '-c', default=8, type=int, help='Number of colors to cluster into (default: 8)')
 @click.option('--output-palette', '-p', type=click.Path(), help='Save color palette visualization to file')
-@click.option('--reduce-colors', '-r', type=click.Path(), help='Save image with reduced colors to file')
+@click.option('--reduce-colors', '-r', type=click.Path(), help='Save clusterized image to specified file (default: auto-generate with _clusterized suffix)')
 @click.option('--text', '-t', is_flag=True, help='Output colors as text (hex codes and frequencies)')
 @click.option('--random-state', '-s', default=42, type=int, help='Random seed for reproducible results')
-def cluster_colors(image_path, colors, output_palette, reduce_colors, text, random_state):
+@click.option('--no-save', is_flag=True, help="Don't save the clusterized image (only show analysis)")
+def cluster_colors(image_path, colors, output_palette, reduce_colors, text, random_state, no_save):
     """
     Cluster colors in an image using k-means algorithm.
 
@@ -73,11 +75,20 @@ def cluster_colors(image_path, colors, output_palette, reduce_colors, text, rand
             clusterer.visualize_palette(save_path=output_palette)
             click.echo("Palette saved!")
 
-        # Reduce image colors if requested
-        if reduce_colors:
-            click.echo(f"Saving reduced color image to: {reduce_colors}")
-            clusterer.reduce_image_colors(output_path=reduce_colors)
-            click.echo("Reduced image saved!")
+        # Reduce image colors - save clusterized version by default
+        if not no_save:
+            if reduce_colors:
+                # Use custom output filename
+                output_path = reduce_colors
+            else:
+                # Auto-generate filename with "_clusterized" suffix
+                stem = image_path.stem
+                suffix = image_path.suffix
+                output_path = image_path.parent / f"{stem}_clusterized{suffix}"
+
+            click.echo(f"Saving clusterized image to: {output_path}")
+            clusterer.reduce_image_colors(output_path=str(output_path))
+            click.echo("Clusterized image saved!")
 
         # If no output options specified, show basic info and palette
         if not text and not output_palette and not reduce_colors:

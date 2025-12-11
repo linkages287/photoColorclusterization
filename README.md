@@ -30,8 +30,11 @@ python cluster_colors.py your_image.jpg
 # Extract 16 colors and save palette visualization
 python cluster_colors.py your_image.jpg --colors 16 --output-palette palette.png
 
-# Reduce image to 4 colors and save the result
-python cluster_colors.py your_image.jpg --colors 4 --reduce-colors reduced.jpg
+# Reduce image to 4 colors (auto-saves as your_image_clusterized.jpg)
+python cluster_colors.py your_image.jpg --colors 4
+
+# Reduce image to 4 colors with custom filename
+python cluster_colors.py your_image.jpg --colors 4 --reduce-colors custom_reduced.jpg
 
 # Get detailed color information as text
 python cluster_colors.py your_image.jpg --text
