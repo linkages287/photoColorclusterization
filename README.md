@@ -135,6 +135,28 @@ The color clustering uses k-means algorithm on the RGB color space:
 3. **Centroid Calculation**: Each cluster's center becomes the representative color
 4. **Color Reduction**: Pixels are reassigned to their nearest cluster center
 
+## Visualization Features
+
+### Color Palette (`--output-palette`)
+Horizontal bar showing the dominant colors as a palette.
+
+### 3D Cluster Visualization (`--visualize-clusters-3d`)
+- **Colored points**: Original image pixels in RGB color space
+- **Large stars**: Cluster centers (dominant colors)
+- **Labels**: Hex color codes for each cluster center
+- Shows how colors are distributed in 3D RGB space
+
+### 2D Cluster Visualization (`--visualize-clusters-2d`)
+- **Same as 3D but projected to 2D** using PCA (Principal Component Analysis)
+- **Easier to view** while preserving color relationships
+- **Color-coded clusters** help understand grouping
+
+These visualizations help you understand:
+- How colors are distributed in your image
+- Which colors dominate
+- How the clustering algorithm groups similar colors
+- The "spread" of colors within each cluster
+
 ## Tips
 
 - **Color Count**: Start with 8-16 colors for most images. More colors = more detail, fewer = more dramatic effect
