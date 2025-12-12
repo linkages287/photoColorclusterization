@@ -14,10 +14,20 @@ A powerful tool for extracting and clustering colors from images using k-means a
 ## Installation
 
 1. Clone or download this repository
-2. Install dependencies:
+2. Set up the virtual environment:
 ```bash
+# Create virtual environment (if not already created)
+python -m venv image_clustering_env
+
+# Activate the environment
+source image_clustering_env/bin/activate  # On Linux/Mac
+# or on Windows: image_clustering_env\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
+
+**Important**: Always activate the virtual environment before running the code to ensure proper dependencies and avoid warning messages.
 
 ## Quick Start
 

@@ -11,7 +11,11 @@ from sklearn.metrics import pairwise_distances_argmin_min
 import matplotlib.pyplot as plt
 from typing import List, Tuple, Optional
 import warnings
-warnings.filterwarnings('ignore')
+
+# Configure warnings more specifically instead of suppressing all
+warnings.filterwarnings('ignore', category=UserWarning, module='matplotlib')
+warnings.filterwarnings('ignore', category=FutureWarning, module='sklearn')
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 # Try to import plotly for interactive visualizations
 try:
