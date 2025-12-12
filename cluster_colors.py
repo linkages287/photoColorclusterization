@@ -39,7 +39,9 @@ from color_clusterer import cluster_image_colors
 @click.option('--visualize-distribution', '-vd', type=click.Path(), help='Save 3D color distribution visualization')
 @click.option('--visualize-clustering', '-vc', type=click.Path(), help='Save 3D clustering visualization')
 @click.option('--visualize-projections', '-vp', type=click.Path(), help='Save 2D color projection visualizations')
-def cluster_colors(image_path, colors, output_palette, reduce_colors, text, random_state, no_save, visualize_distribution, visualize_clustering, visualize_projections):
+@click.option('--interactive-3d', '-i3d', type=click.Path(), help='Save interactive 3D clustering visualization (HTML)')
+@click.option('--interactive-distribution', '-idist', type=click.Path(), help='Save interactive 3D color distribution (HTML)')
+def cluster_colors(image_path, colors, output_palette, reduce_colors, text, random_state, no_save, visualize_distribution, visualize_clustering, visualize_projections, interactive_3d, interactive_distribution):
     """
     Cluster colors in an image using k-means algorithm.
 
@@ -96,6 +98,18 @@ def cluster_colors(image_path, colors, output_palette, reduce_colors, text, rand
             click.echo(f"Saving 2D color projections to: {visualize_projections}")
             clusterer.visualize_color_projections(save_path=visualize_projections)
             click.echo("Color projections visualization saved!")
+
+        # Save interactive 3D clustering visualization if requested
+        if interactive_3d:
+            click.echo(f"Saving interactive 3D clustering visualization to: {interactive_3d}")
+            clusterer.visualize_interactive_3d(save_path=interactive_3d)
+            click.echo("Interactive 3D clustering visualization saved!")
+
+        # Save interactive 3D distribution visualization if requested
+        if interactive_distribution:
+            click.echo(f"Saving interactive 3D color distribution to: {interactive_distribution}")
+            clusterer.visualize_interactive_distribution(save_path=interactive_distribution)
+            click.echo("Interactive 3D color distribution saved!")
 
         # Reduce image colors - save clusterized version by default
         if not no_save:

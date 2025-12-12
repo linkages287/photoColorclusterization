@@ -42,6 +42,9 @@ python cluster_colors.py your_image.jpg --text
 # Create comprehensive color visualizations
 python cluster_colors.py photo.jpg --colors 8 --visualize-distribution color_space.png --visualize-clustering clusters.png --visualize-projections projections.png
 
+# Create interactive 3D visualizations (open in browser!)
+python cluster_colors.py photo.jpg --colors 8 --interactive-3d clustering_3d.html --interactive-distribution distribution_3d.html
+
 # Create 2D cluster visualization (PCA projection for easier viewing)
 python cluster_colors.py photo.jpg --colors 6 --visualize-clusters-2d clusters_2d.png
 
@@ -82,6 +85,8 @@ clusterer.reduce_image_colors(output_path='reduced_image.jpg')
 - `--visualize-distribution, -vd`: Save 3D color distribution visualization
 - `--visualize-clustering, -vc`: Save 3D clustering results visualization
 - `--visualize-projections, -vp`: Save 2D color projection visualizations
+- `--interactive-3d, -i3d`: Save interactive 3D clustering visualization (HTML)
+- `--interactive-distribution, -idist`: Save interactive 3D color distribution (HTML)
 - `--text, -t`: Output colors as text with hex codes and frequencies
 - `--random-state, -s`: Random seed for reproducible results (default: 42)
 - `--no-save`: Don't save the clusterized image (only show analysis)
@@ -157,6 +162,19 @@ Horizontal bar showing the dominant colors as a palette with hex codes.
 - **X marks** show cluster centers on each projection
 - **Helps visualize** color relationships in different dimensions
 - **Color-coded clusters** make grouping patterns clear
+
+### Interactive 3D Clustering (`--interactive-3d`)
+- **Fully interactive** 3D scatter plot you can rotate, zoom, and pan
+- **Color-coded clusters** with cluster centers marked as diamonds
+- **Hover information** shows RGB values and cluster membership
+- **Legend** identifies each cluster
+- **Opens in any web browser** as standalone HTML file
+
+### Interactive 3D Distribution (`--interactive-distribution`)
+- **Interactive view** of the original color distribution in RGB space
+- **Each pixel** is a point colored by its actual RGB values
+- **Rotate and zoom** to explore the color space from any angle
+- **Hover to see** exact RGB values of individual pixels
 
 These visualizations help you understand:
 - How colors are distributed in your image

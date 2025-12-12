@@ -13,6 +13,14 @@ from typing import List, Tuple, Optional
 import warnings
 warnings.filterwarnings('ignore')
 
+# Try to import plotly for interactive visualizations
+try:
+    import plotly.graph_objects as go
+    import plotly.express as px
+    PLOTLY_AVAILABLE = True
+except ImportError:
+    PLOTLY_AVAILABLE = False
+
 
 class ColorClusterer:
     """A class for clustering colors in images using k-means algorithm."""
@@ -550,3 +558,194 @@ def cluster_image_colors(image_path: str, n_colors: int = 8, random_state: int =
     pixels = clusterer.load_image(image_path)
     clusterer.fit(pixels)
     return clusterer
+
+
+def visualize_interactive_3d(self, save_path: Optional[str] = None, max_samples: int = 5000, show_palette: bool = True):
+    """
+    Create an interactive 3D visualization of color distribution and clustering.
+
+    Args:
+        save_path: Path to save the interactive HTML file. If None, displays it.
+        max_samples: Maximum number of pixels to sample for visualization
+        show_palette: Whether to show the color palette alongside the 3D plot
+    """
+    if not PLOTLY_AVAILABLE:
+        raise ImportError("Plotly is required for interactive visualizations. Install with: pip install plotly")
+
+    if self.kmeans is None or self.pixels is None:
+        raise ValueError("Model not fitted. Call fit() first.")
+
+    # Sample pixels for visualization
+    pixels = self.pixels
+    if len(pixels) > max_samples:
+        indices = np.random.choice(len(pixels), max_samples, replace=False)
+        pixels = pixels[indices]
+
+    # Get cluster labels for sampled pixels
+    labels = self.kmeans.predict(pixels)
+
+    # Create the main 3D scatter plot
+    fig = go.Figure()
+
+    # Add clustered points
+    for cluster_id in range(len(self.palette)):
+        cluster_pixels = pixels[labels == cluster_id]
+        if len(cluster_pixels) > 0:
+            cluster_color = self.palette[cluster_id]
+            hex_color = f'rgb({cluster_color[0]}, {cluster_color[1]}, {cluster_color[2]})'
+
+            fig.add_trace(go.Scatter3d(
+                x=cluster_pixels[:, 0],
+                y=cluster_pixels[:, 1],
+                z=cluster_pixels[:, 2],
+                mode='markers',
+                marker=dict(
+                    size=3,
+                    color=hex_color,
+                    opacity=0.7,
+                    line=dict(width=0)
+                ),
+                name=f'Cluster {cluster_id + 1}',
+                hovertemplate=f'Cluster {cluster_id + 1}<br>R: %{{x}}<br>G: %{{y}}<br>B: %{{z}}<extra></extra>'
+            ))
+
+    # Add cluster centers as larger markers
+    center_colors = [f'rgb({c[0]}, {c[1]}, {c[2]})' for c in self.palette]
+    fig.add_trace(go.Scatter3d(
+        x=self.palette[:, 0],
+        y=self.palette[:, 1],
+        z=self.palette[:, 2],
+        mode='markers',
+        marker=dict(
+            size=12,
+            color=center_colors,
+            symbol='diamond',
+            line=dict(width=2, color='black'),
+            opacity=1.0
+        ),
+        name='Cluster Centers',
+        hovertemplate=[
+            f'Center<br>R: {c[0]}<br>G: {c[1]}<br>B: {c[2]}<br>Hex: #{c[0]:02x}{c[1]:02x}{c[2]:02x}<extra></extra>'
+            for c in self.palette
+        ]
+    ))
+
+    # Update layout
+    fig.update_layout(
+        scene=dict(
+            xaxis_title='Red',
+            yaxis_title='Green',
+            zaxis_title='Blue',
+            xaxis=dict(range=[0, 255]),
+            yaxis=dict(range=[0, 255]),
+            zaxis=dict(range=[0, 255]),
+            aspectmode='cube'
+        ),
+        title=dict(
+            text=f'Interactive 3D Color Clustering ({len(self.palette)} colors, {len(pixels)} samples)',
+            x=0.5,
+            font=dict(size=16)
+        ),
+        showlegend=True,
+        legend=dict(
+            x=0.02,
+            y=0.98,
+            bgcolor='rgba(255, 255, 255, 0.8)'
+        ),
+        margin=dict(l=0, r=0, b=0, t=40)
+    )
+
+    # Add color palette as annotations if requested
+    if show_palette:
+        # Add palette colors as text annotations
+        palette_text = '<br>'.join([f'#{c[0]:02x}{c[1]:02x}{c[2]:02x}' for c in self.palette])
+
+        fig.add_annotation(
+            text=f"<b>Color Palette:</b><br>{palette_text}",
+            xref="paper", yref="paper",
+            x=0.02, y=0.02,
+            showarrow=False,
+            bgcolor="rgba(255, 255, 255, 0.9)",
+            bordercolor="black",
+            borderwidth=1,
+            borderpad=4,
+            font=dict(size=10)
+        )
+
+    if save_path:
+        if not save_path.endswith('.html'):
+            save_path += '.html'
+        fig.write_html(save_path)
+        print(f"Interactive visualization saved to: {save_path}")
+        print("Open this file in any web browser to interact with the 3D visualization.")
+    else:
+        fig.show()
+
+
+def visualize_interactive_distribution(self, save_path: Optional[str] = None, max_samples: int = 5000):
+    """
+    Create an interactive 3D visualization of the original color distribution.
+
+    Args:
+        save_path: Path to save the interactive HTML file. If None, displays it.
+        max_samples: Maximum number of pixels to sample for visualization
+    """
+    if not PLOTLY_AVAILABLE:
+        raise ImportError("Plotly is required for interactive visualizations. Install with: pip install plotly")
+
+    if self.pixels is None:
+        raise ValueError("No pixel data available. Load an image first.")
+
+    # Sample pixels for visualization
+    pixels = self.pixels
+    if len(pixels) > max_samples:
+        indices = np.random.choice(len(pixels), max_samples, replace=False)
+        pixels = pixels[indices]
+
+    # Create 3D scatter plot
+    fig = go.Figure(data=[go.Scatter3d(
+        x=pixels[:, 0],
+        y=pixels[:, 1],
+        z=pixels[:, 2],
+        mode='markers',
+        marker=dict(
+            size=2,
+            color=[f'rgb({int(r)}, {int(g)}, {int(b)})' for r, g, b in pixels],
+            opacity=0.6,
+            line=dict(width=0)
+        ),
+        hovertemplate='R: %{x}<br>G: %{y}<br>B: %{z}<extra></extra>'
+    )])
+
+    # Update layout
+    fig.update_layout(
+        scene=dict(
+            xaxis_title='Red',
+            yaxis_title='Green',
+            zaxis_title='Blue',
+            xaxis=dict(range=[0, 255]),
+            yaxis=dict(range=[0, 255]),
+            zaxis=dict(range=[0, 255]),
+            aspectmode='cube'
+        ),
+        title=dict(
+            text=f'Interactive 3D Color Distribution ({len(pixels)} samples)',
+            x=0.5,
+            font=dict(size=16)
+        ),
+        margin=dict(l=0, r=0, b=0, t=40)
+    )
+
+    if save_path:
+        if not save_path.endswith('.html'):
+            save_path += '.html'
+        fig.write_html(save_path)
+        print(f"Interactive visualization saved to: {save_path}")
+        print("Open this file in any web browser to interact with the 3D visualization.")
+    else:
+        fig.show()
+
+
+# Add the methods to the ColorClusterer class
+ColorClusterer.visualize_interactive_3d = visualize_interactive_3d
+ColorClusterer.visualize_interactive_distribution = visualize_interactive_distribution
