@@ -36,9 +36,10 @@ from color_clusterer import cluster_image_colors
 @click.option('--text', '-t', is_flag=True, help='Output colors as text (hex codes and frequencies)')
 @click.option('--random-state', '-s', default=42, type=int, help='Random seed for reproducible results')
 @click.option('--no-save', is_flag=True, help="Don't save the clusterized image (only show analysis)")
-@click.option('--visualize-clusters-3d', '-3', type=click.Path(), help='Save 3D RGB cluster visualization to file')
-@click.option('--visualize-clusters-2d', '-2', type=click.Path(), help='Save 2D PCA cluster visualization to file')
-def cluster_colors(image_path, colors, output_palette, reduce_colors, text, random_state, no_save, visualize_clusters_3d, visualize_clusters_2d):
+@click.option('--visualize-distribution', '-vd', type=click.Path(), help='Save 3D color distribution visualization')
+@click.option('--visualize-clustering', '-vc', type=click.Path(), help='Save 3D clustering visualization')
+@click.option('--visualize-projections', '-vp', type=click.Path(), help='Save 2D color projection visualizations')
+def cluster_colors(image_path, colors, output_palette, reduce_colors, text, random_state, no_save, visualize_distribution, visualize_clustering, visualize_projections):
     """
     Cluster colors in an image using k-means algorithm.
 
@@ -78,17 +79,23 @@ def cluster_colors(image_path, colors, output_palette, reduce_colors, text, rand
             clusterer.visualize_palette(save_path=output_palette)
             click.echo("Palette saved!")
 
-        # Save 3D cluster visualization if requested
-        if visualize_clusters_3d:
-            click.echo(f"Saving 3D cluster visualization to: {visualize_clusters_3d}")
-            clusterer.visualize_clusters(save_path=visualize_clusters_3d)
-            click.echo("3D cluster visualization saved!")
+        # Save color distribution visualization if requested
+        if visualize_distribution:
+            click.echo(f"Saving 3D color distribution to: {visualize_distribution}")
+            clusterer.visualize_color_distribution(save_path=visualize_distribution)
+            click.echo("Color distribution visualization saved!")
 
-        # Save 2D cluster visualization if requested
-        if visualize_clusters_2d:
-            click.echo(f"Saving 2D cluster visualization to: {visualize_clusters_2d}")
-            clusterer.visualize_clusters_2d(save_path=visualize_clusters_2d)
-            click.echo("2D cluster visualization saved!")
+        # Save clustering visualization if requested
+        if visualize_clustering:
+            click.echo(f"Saving 3D clustering visualization to: {visualize_clustering}")
+            clusterer.visualize_clustering(save_path=visualize_clustering)
+            click.echo("Clustering visualization saved!")
+
+        # Save color projections visualization if requested
+        if visualize_projections:
+            click.echo(f"Saving 2D color projections to: {visualize_projections}")
+            clusterer.visualize_color_projections(save_path=visualize_projections)
+            click.echo("Color projections visualization saved!")
 
         # Reduce image colors - save clusterized version by default
         if not no_save:

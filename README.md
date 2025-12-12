@@ -39,8 +39,8 @@ python cluster_colors.py your_image.jpg --colors 4 --reduce-colors custom_reduce
 # Get detailed color information as text
 python cluster_colors.py your_image.jpg --text
 
-# Create 3D cluster visualization (shows pixels and cluster centers in RGB space)
-python cluster_colors.py photo.jpg --colors 8 --visualize-clusters-3d clusters_3d.png
+# Create comprehensive color visualizations
+python cluster_colors.py photo.jpg --colors 8 --visualize-distribution color_space.png --visualize-clustering clusters.png --visualize-projections projections.png
 
 # Create 2D cluster visualization (PCA projection for easier viewing)
 python cluster_colors.py photo.jpg --colors 6 --visualize-clusters-2d clusters_2d.png
@@ -79,8 +79,9 @@ clusterer.reduce_image_colors(output_path='reduced_image.jpg')
 - `--colors, -c`: Number of colors to cluster into (default: 8)
 - `--output-palette, -p`: Save color palette visualization to file
 - `--reduce-colors, -r`: Save clusterized image to specified file (default: auto-generate with _clusterized suffix)
-- `--visualize-clusters-3d, -3`: Save 3D RGB cluster visualization to file
-- `--visualize-clusters-2d, -2`: Save 2D PCA cluster visualization to file
+- `--visualize-distribution, -vd`: Save 3D color distribution visualization
+- `--visualize-clustering, -vc`: Save 3D clustering results visualization
+- `--visualize-projections, -vp`: Save 2D color projection visualizations
 - `--text, -t`: Output colors as text with hex codes and frequencies
 - `--random-state, -s`: Random seed for reproducible results (default: 42)
 - `--no-save`: Don't save the clusterized image (only show analysis)
@@ -138,24 +139,31 @@ The color clustering uses k-means algorithm on the RGB color space:
 ## Visualization Features
 
 ### Color Palette (`--output-palette`)
-Horizontal bar showing the dominant colors as a palette.
+Horizontal bar showing the dominant colors as a palette with hex codes.
 
-### 3D Cluster Visualization (`--visualize-clusters-3d`)
-- **Colored points**: Original image pixels in RGB color space
-- **Large stars**: Cluster centers (dominant colors)
-- **Labels**: Hex color codes for each cluster center
-- Shows how colors are distributed in 3D RGB space
+### 3D Color Distribution (`--visualize-distribution`)
+- **3D scatter plot** of original image pixels in RGB color space
+- **Color-coded points** show the natural distribution of colors
+- **Helps understand** the color space coverage of your image
 
-### 2D Cluster Visualization (`--visualize-clusters-2d`)
-- **Same as 3D but projected to 2D** using PCA (Principal Component Analysis)
-- **Easier to view** while preserving color relationships
-- **Color-coded clusters** help understand grouping
+### 3D Clustering Results (`--visualize-clustering`)
+- **Left plot**: 3D scatter plot showing clustered pixels with color coding
+- **Right plot**: Extracted color palette
+- **Shows how** the k-means algorithm grouped colors together
+- **Legend** indicates which cluster each color belongs to
+
+### 2D Color Projections (`--visualize-projections`)
+- **Three 2D plots** showing color projections (RG, GB, BR planes)
+- **X marks** show cluster centers on each projection
+- **Helps visualize** color relationships in different dimensions
+- **Color-coded clusters** make grouping patterns clear
 
 These visualizations help you understand:
 - How colors are distributed in your image
-- Which colors dominate
+- Which colors dominate the composition
 - How the clustering algorithm groups similar colors
-- The "spread" of colors within each cluster
+- The spatial relationships between color clusters
+- The effectiveness of your chosen number of colors
 
 ## Tips
 

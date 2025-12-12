@@ -220,6 +220,173 @@ class ColorClusterer:
         else:
             plt.show()
 
+    def visualize_color_distribution(self, save_path: Optional[str] = None, max_samples: int = 10000):
+        """
+        Visualize the original color distribution in 3D RGB space.
+
+        Args:
+            save_path: Path to save the visualization. If None, displays it.
+            max_samples: Maximum number of pixels to sample for visualization
+        """
+        if self.pixels is None:
+            raise ValueError("No pixel data available. Load an image first.")
+
+        # Sample pixels for visualization
+        pixels = self.pixels
+        if len(pixels) > max_samples:
+            indices = np.random.choice(len(pixels), max_samples, replace=False)
+            pixels = pixels[indices]
+
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(111, projection='3d')
+
+        # Plot original color distribution
+        ax.scatter(pixels[:, 0], pixels[:, 1], pixels[:, 2],
+                  c=pixels/255.0, s=1, alpha=0.6, edgecolors='none')
+
+        ax.set_xlabel('Red')
+        ax.set_ylabel('Green')
+        ax.set_zlabel('Blue')
+        ax.set_title(f'Original Color Distribution ({len(pixels)} samples)')
+        ax.set_xlim(0, 255)
+        ax.set_ylim(0, 255)
+        ax.set_zlim(0, 255)
+
+        plt.tight_layout()
+
+        if save_path:
+            plt.savefig(save_path, bbox_inches='tight', dpi=150)
+            plt.close()
+        else:
+            plt.show()
+
+    def visualize_clustering(self, save_path: Optional[str] = None, max_samples: int = 10000):
+        """
+        Visualize the color clustering results in 3D RGB space.
+
+        Args:
+            save_path: Path to save the visualization. If None, displays it.
+            max_samples: Maximum number of pixels to sample for visualization
+        """
+        if self.kmeans is None or self.pixels is None:
+            raise ValueError("Model not fitted. Call fit() first.")
+
+        # Sample pixels for visualization
+        pixels = self.pixels
+        if len(pixels) > max_samples:
+            indices = np.random.choice(len(pixels), max_samples, replace=False)
+            pixels = pixels[indices]
+
+        # Get cluster labels for sampled pixels
+        labels = self.kmeans.predict(pixels)
+
+        fig = plt.figure(figsize=(15, 8))
+
+        # Original color distribution
+        ax1 = fig.add_subplot(121, projection='3d')
+        scatter1 = ax1.scatter(pixels[:, 0], pixels[:, 1], pixels[:, 2],
+                              c=labels, cmap='tab10', s=1, alpha=0.6, edgecolors='none')
+        ax1.set_xlabel('Red')
+        ax1.set_ylabel('Green')
+        ax1.set_zlabel('Blue')
+        ax1.set_title('Color Clustering Results')
+        ax1.set_xlim(0, 255)
+        ax1.set_ylim(0, 255)
+        ax1.set_zlim(0, 255)
+
+        # Color palette with cluster centers
+        ax2 = fig.add_subplot(122)
+        # Show palette as before
+        ax2.imshow([self.palette], aspect='auto')
+        ax2.set_xticks(range(len(self.palette)))
+        ax2.set_xticklabels([f'#{r:02x}{g:02x}{b:02x}' for r, g, b in self.palette])
+        ax2.set_yticks([])
+        ax2.set_title(f'Extracted Color Palette ({len(self.palette)} colors)')
+
+        # Add legend to 3D plot
+        legend_elements = [plt.Line2D([0], [0], marker='o', color='w',
+                                    markerfacecolor=scatter1.cmap(scatter1.norm(i)),
+                                    markersize=10, label=f'Cluster {i+1}')
+                          for i in range(len(self.palette))]
+        ax1.legend(handles=legend_elements, bbox_to_anchor=(1.05, 1), loc='upper left')
+
+        plt.tight_layout()
+
+        if save_path:
+            plt.savefig(save_path, bbox_inches='tight', dpi=150)
+            plt.close()
+        else:
+            plt.show()
+
+    def visualize_color_projections(self, save_path: Optional[str] = None, max_samples: int = 5000):
+        """
+        Visualize color projections in 2D planes (RG, GB, BR).
+
+        Args:
+            save_path: Path to save the visualization. If None, displays it.
+            max_samples: Maximum number of pixels to sample for visualization
+        """
+        if self.kmeans is None or self.pixels is None:
+            raise ValueError("Model not fitted. Call fit() first.")
+
+        # Sample pixels for visualization
+        pixels = self.pixels
+        if len(pixels) > max_samples:
+            indices = np.random.choice(len(pixels), max_samples, replace=False)
+            pixels = pixels[indices]
+
+        # Get cluster labels for sampled pixels
+        labels = self.kmeans.predict(pixels)
+
+        fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+
+        # RG plane (Red-Green)
+        scatter1 = axes[0].scatter(pixels[:, 0], pixels[:, 1], c=labels,
+                                  cmap='tab10', s=2, alpha=0.7, edgecolors='none')
+        axes[0].set_xlabel('Red')
+        axes[0].set_ylabel('Green')
+        axes[0].set_title('Red-Green Projection')
+        axes[0].set_xlim(0, 255)
+        axes[0].set_ylim(0, 255)
+
+        # GB plane (Green-Blue)
+        axes[1].scatter(pixels[:, 1], pixels[:, 2], c=labels,
+                       cmap='tab10', s=2, alpha=0.7, edgecolors='none')
+        axes[1].set_xlabel('Green')
+        axes[1].set_ylabel('Blue')
+        axes[1].set_title('Green-Blue Projection')
+        axes[1].set_xlim(0, 255)
+        axes[1].set_ylim(0, 255)
+
+        # BR plane (Blue-Red)
+        axes[2].scatter(pixels[:, 2], pixels[:, 0], c=labels,
+                       cmap='tab10', s=2, alpha=0.7, edgecolors='none')
+        axes[2].set_xlabel('Blue')
+        axes[2].set_ylabel('Red')
+        axes[2].set_title('Blue-Red Projection')
+        axes[2].set_xlim(0, 255)
+        axes[2].set_ylim(0, 255)
+
+        # Add cluster centers to each plot
+        for i, center in enumerate(self.palette):
+            # RG
+            axes[0].scatter(center[0], center[1], c=[scatter1.cmap(scatter1.norm(i))],
+                           s=100, marker='x', linewidth=3, edgecolors='black')
+            # GB
+            axes[1].scatter(center[1], center[2], c=[scatter1.cmap(scatter1.norm(i))],
+                           s=100, marker='x', linewidth=3, edgecolors='black')
+            # BR
+            axes[2].scatter(center[2], center[0], c=[scatter1.cmap(scatter1.norm(i))],
+                           s=100, marker='x', linewidth=3, edgecolors='black')
+
+        plt.tight_layout()
+
+        if save_path:
+            plt.savefig(save_path, bbox_inches='tight', dpi=150)
+            plt.close()
+        else:
+            plt.show()
+
     def visualize_clusters(self, save_path: Optional[str] = None, figsize: Tuple[int, int] = (12, 8), max_points: int = 5000):
         """
         Visualize color clusters in 3D RGB space.
